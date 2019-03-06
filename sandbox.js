@@ -7,7 +7,7 @@ async function sandbox (actor) {
     console.log(`📽️  fetching filmography of ${actor}...`);
     const movies = await imdb(actor);
     const awesome = movies.filter(movie => movie.metascore >= 77);
-
+    
     console.log(`🍿 ${movies.length} movies found.`);
     console.log(JSON.stringify(movies, null, 2));
     console.log(`🥇 ${awesome.length} awesome movies found.`);
@@ -17,6 +17,8 @@ async function sandbox (actor) {
     console.error(e);
     process.exit(1);
   }
+  module.exports = {movies,awesome};
 }
+
 
 sandbox(DENZEL_IMDB_ID);
