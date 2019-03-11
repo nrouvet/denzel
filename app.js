@@ -75,11 +75,19 @@ app.get("/movies/fetch", (request, response) => {
     });
 });
 
-app.get("/movies/:id", (request, response) => {
-  collection.findOne({ id: request.params.id }).toArray((error, result) => {
-    if (error) {
-      return response.status(500).send(error);
-    }
-    response.send(result);
-  });
+app.get("/movies/search", (request, response) => {
+  console.log(request.query.limit);
+  collection
+    .aggregate([
+      {
+        $match: { metascore: { $gte: Number(70) } }
+      },
+      { $sample: { size: Number(5) } }
+    ])
+    .toArray((error, result) => {
+      if (error) {
+        return response.status(500).send(error);
+      }
+      response.send(result);
+    });
 });
