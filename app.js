@@ -16,7 +16,7 @@ app.use(BodyParser.urlencoded({ extended: true }));
 
 var database, collection;
 
-app.listen(3000, () => {
+app.listen(9292, () => {
   MongoClient.connect(
     CONNECTION_URL,
     { useNewUrlParser: true },
@@ -50,8 +50,33 @@ app.post("/person", (request, response) => {
   });
 });*/
 
+// give all the movies scrap in imdb
 app.get("/movies", (request, response) => {
   collection.find({}).toArray((error, result) => {
+    if (error) {
+      return response.status(500).send(error);
+    }
+    response.send(result);
+  });
+});
+
+//fetch a random movie 
+app.get("/movies/fetch", (request, response) => {
+  collection
+    .aggregate([
+      { $match: { metascore: { $gte: 70 } } },
+      { $sample: { size: 1 } }
+    ])
+    .toArray((error, result) => {
+      if (error) {
+        return response.status(500).send(error);
+      }
+      response.send(result);
+    });
+});
+
+app.get("/movies/:id", (request, response) => {
+  collection.findOne({ id: request.params.id }).toArray((error, result) => {
     if (error) {
       return response.status(500).send(error);
     }

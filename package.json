@@ -12,9 +12,9 @@
     "p-settle": "^2.1.0"
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "node app.js"
   },
-  "main": "sandbox.js",
+  "main": "app.js",
   "devDependencies": {},
   "repository": {
     "type": "git",
