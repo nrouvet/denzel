@@ -2,8 +2,8 @@ const Express = require("express");
 const BodyParser = require("body-parser");
 const MongoClient = require("mongodb").MongoClient;
 const ObjectId = require("mongodb").ObjectID;
-const imdb = require('./src/imdb');
-const DENZEL_IMDB_ID = 'nm0000243';
+const imdb = require("./src/imdb");
+const DENZEL_IMDB_ID = "nm0000243";
 
 const CONNECTION_URL =
   "mongodb+srv://nrouvet:Budweiser22@webaadenzel-n4nof.mongodb.net/test?retryWrites=true";
@@ -32,14 +32,14 @@ app.listen(9292, () => {
 });
 
 app.get("/movies/populate", async (request, response) => {
-    const movies = await imdb(DENZEL_IMDB_ID);
-    collection.insertMany(movies, (err, result) => {
-      if (err) {
-        return response.status(500).send(err);
-      }
-      response.send(`Total movies added : ${movies.length}`);
-    });
+  const movies = await imdb(DENZEL_IMDB_ID);
+  collection.insertMany(movies, (err, result) => {
+    if (err) {
+      return response.status(500).send(err);
+    }
+    response.send(`Total movies added : ${movies.length}`);
   });
+});
 /*
 app.post("/person", (request, response) => {
   collection.insert(request.body, (error, result) => {
@@ -60,7 +60,7 @@ app.get("/movies", (request, response) => {
   });
 });
 
-//fetch a random movie 
+//fetch a random movie
 app.get("/movies/fetch", (request, response) => {
   collection
     .aggregate([
@@ -75,14 +75,18 @@ app.get("/movies/fetch", (request, response) => {
     });
 });
 
+// This endpoint accepts the following optional query string parameters:
+//limit - number of movies to return (default: 5)
+//metascore - filter by metascore (default: 0)
+
 app.get("/movies/search", (request, response) => {
   console.log(request.query.limit);
   collection
     .aggregate([
       {
-        $match: { metascore: { $gte: Number(70) } }
+        $match: { metascore: { $gte: Number(request.query.metascore) } }
       },
-      { $sample: { size: Number(5) } }
+      { $sample: { size: Number(request.query.limit) } }
     ])
     .toArray((error, result) => {
       if (error) {
@@ -90,4 +94,23 @@ app.get("/movies/search", (request, response) => {
       }
       response.send(result);
     });
+});
+// request to find a movie by id
+app.get("/movies/:id", (request, response) => {
+  collection.find({ id: request.params.id }).toArray((error, result) => {
+    if (error) {
+      return response.status(500).send(error);
+    }
+    response.send(result);
+  });
+});
+
+
+app.post("/movies/:id", (request, response) => {
+  collection.updateOne({ "id": request.params.id },{$set : {"date": request.body.date , "review": request.body.review}}, (error, result) => {
+    if(error) {
+        return response.status(500).send(error);
+    }
+    response.send(result.result);
+});
 });
