@@ -125,10 +125,16 @@ app.post("/movies/:id", (request, response) => {
 //get all the libraries needed
 const express = require('express');
 const graphqlHTTP = require('express-graphql');
-const {GraphQLSchema} = require('graphql');
-
-
-const {queryType} = require('./query.js');
+const { GraphQLSchema,
+  GraphQLObjectType,
+  GraphQLString,
+  GraphQLInt,
+  GraphQLID,
+  GraphQLList,
+  GraphQLDate
+} = require('graphql');
+const _ = require('lodash');
+const movieType = require('./types.js').movieType;
 
 //setting up the port number and express app
 const port = 5000;
@@ -136,12 +142,97 @@ var app = express();
 
  // Define the Schema
  
+ const queryType = new GraphQLObjectType({
+  name: 'Query',
+  fields: {
+      hello: {
+          type: GraphQLString,
+
+          resolve: function () {
+              return "Hello World";
+          }
+      },
+      populate:{
+        type: GraphQLString,
+        resolve: async () => {
+          const movies = await imdb(DENZEL_IMDB_ID);
+          collection.insertMany(movies, (error, result) => {
+              if(error) {
+                  return response.status(500).send(error);
+              }
+
+          });
+          return "done";
+        }
+      },
+
+      randomMovie:{
+        type: movieType,
+        resolve: async () => {
+                const res = await collection.aggregate([{ $match: { "metascore": {$gt:70}}}, { $sample: { size: 1 }}]).toArray()
+                return res[0]
+        },
+      },
+
+      findMovie:{
+        type: movieType,
+        args:{
+          id: { type: GraphQLString }
+        },
+        resolve: async (source, args) => {
+          let res =  await collection.findOne({id : args.id});
+
+          return res;
+        }
+      },
+      search:{
+        type: GraphQLList(movieType),
+        args:{
+          limit: {type : GraphQLInt},
+          metascore: {type : GraphQLInt}
+        },
+        resolve : async (source, args) => {
+              let metascore;
+              let limit;
+              if(args.limit == undefined) {
+                limit = 5
+              } else {
+                limit = args.limit;
+              }
+              if(args.metascore == undefined) {
+                metascore = 0
+              }else {
+                metascore = args.metascore;
+              }
+              const res = await collection.aggregate([{$match:{"metascore": {$gte:Number(metascore)}}}, {$limit:Number(limit)}, {$sort:{"metascore":-1}}]).toArray()
+              return res
+            }
+      },
+      review:{
+        type:GraphQLString,
+        args:{
+          id: {type : GraphQLString},
+          date:{type : GraphQLString},
+          review:{type : GraphQLString}
+        },
+        resolve : async (source,args) =>{
+          collection.updateOne({ "id": args.id },{$set : {"date": args.date , "review": args.review}}, (error, result) => {
+            if(error) {
+                return response.status(500).send(error);
+            }
+        });
+        return "done";
+        }
+      }
+
+  }
+});
+
 const schema = new GraphQLSchema({ query: queryType });
 
-//Setup the nodejs GraphQL server
 app.use('/graphql', graphqlHTTP({
-    schema: schema,
-    graphiql: true,
+  schema: schema,
+  graphiql: true,
 }));
 
 app.listen(port);

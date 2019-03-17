@@ -2,17 +2,27 @@ const {
     GraphQLObjectType,
     GraphQLID,
     GraphQLString,
-    GraphQLInt
+    GraphQLInt,
+    GraphQLFloat,
+    GraphQLList
 } = require('graphql');
 
 // Define Movie Type
 movieType = new GraphQLObjectType({
     name: 'Movie',
     fields: {
-        id: { type: GraphQLID },
-        name: { type: GraphQLString },
+        _id: { type: GraphQLID },
+        link: { type: GraphQLString },
+        id: { type: GraphQLString },
+        metascore: { type: GraphQLInt },
+        poster: { type: GraphQLString },
+        rating: { type: GraphQLFloat },
+        synopsis: { type: GraphQLString },
+        title: { type: GraphQLString },
+        votes: { type: GraphQLFloat},
         year: { type: GraphQLInt },
-        directorId: { type: GraphQLID }
+        date:{type: GraphQLString},
+        review:{type:GraphQLString}
 
     }
 });
