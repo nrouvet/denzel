@@ -4,9 +4,10 @@ const MongoClient = require("mongodb").MongoClient;
 const ObjectId = require("mongodb").ObjectID;
 const imdb = require("./src/imdb");
 const DENZEL_IMDB_ID = "nm0000243";
+require('dotenv').config()
 
-const CONNECTION_URL =
-  "mongodb+srv://nrouvet:Budweiser22@webaadenzel-n4nof.mongodb.net/test?retryWrites=true";
+
+
 const DATABASE_NAME = "denzel";
 
 var app = Express();
@@ -18,7 +19,7 @@ var database, collection;
 
 app.listen(9292, () => {
   MongoClient.connect(
-    CONNECTION_URL,
+    process.env.CONNECTION_URL,
     { useNewUrlParser: true },
     (error, client) => {
       if (error) {
@@ -105,12 +106,43 @@ app.get("/movies/:id", (request, response) => {
   });
 });
 
-
 app.post("/movies/:id", (request, response) => {
-  collection.updateOne({ "id": request.params.id },{$set : {"date": request.body.date , "review": request.body.review}}, (error, result) => {
-    if(error) {
+  collection.updateOne(
+    { id: request.params.id },
+    { $set: { date: request.body.date, review: request.body.review } },
+    (error, result) => {
+      if (error) {
         return response.status(500).send(error);
+      }
+      response.send(result.result);
     }
-    response.send(result.result);
+  );
 });
-});
+
+
+
+// graphql
+//get all the libraries needed
+const express = require('express');
+const graphqlHTTP = require('express-graphql');
+const {GraphQLSchema} = require('graphql');
+
+
+const {queryType} = require('./query.js');
+
+//setting up the port number and express app
+const port = 5000;
+var app = express();
+
+ // Define the Schema
+ 
+const schema = new GraphQLSchema({ query: queryType });
+
+//Setup the nodejs GraphQL server
+app.use('/graphql', graphqlHTTP({
+    schema: schema,
+    graphiql: true,
+}));
+
+app.listen(port);
+console.log(`GraphQL Server Running at localhost:${port}`);
