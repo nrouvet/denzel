@@ -41,7 +41,7 @@ app.get("/movies/populate", async (request, response) => {
     response.send(`Total movies added : ${movies.length}`);
   });
 });
-/*
+
 app.post("/person", (request, response) => {
   collection.insert(request.body, (error, result) => {
     if (error) {
@@ -49,7 +49,7 @@ app.post("/person", (request, response) => {
     }
     response.send(result.result);
   });
-});*/
+});
 
 // give all the movies scrap in imdb
 app.get("/movies", (request, response) => {
@@ -137,7 +137,7 @@ const _ = require('lodash');
 const movieType = require('./types.js').movieType;
 
 //setting up the port number and express app
-const port = 5000;
+const port = 9292;
 var app = express();
 
  // Define the Schema
